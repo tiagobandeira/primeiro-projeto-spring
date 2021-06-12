@@ -2,60 +2,45 @@ package com.eletrongroup.stringapp;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.eletrongroup.stringapp.service.EmpresaService;
+
 
 @RestController
 @RequestMapping({"/empresa"})
 public class EmpresaController {
     @Autowired
-    private EmpresaRepository empresaRepository;
+    private EmpresaService empresaService;
     
 
     @PostMapping("/add")
-    public String addEmpresa(@RequestParam String cnpj) {
-        Empresa empresa = new Empresa();
-        empresa.setCnpj(cnpj);
-        empresaRepository.save(empresa);
-        return "Empresa adicionada com sucesso!";
+    public Empresa add(@RequestBody Empresa empresa) {
+        return empresaService.saveEmpresa(empresa);
     }
     @PutMapping("/edit/{id}")
-    public String editEmpresa(@PathVariable("id") Long id, @RequestBody Empresa empresa) throws Exception{
-        //Metodo 1
-        empresaRepository.findById(id).map( item -> {
-            item.setCnpj(empresa.getCnpj());
-            Empresa empresaUpdated = empresaRepository.save(item);
-            return ResponseEntity.ok().body(empresaUpdated);
-        }).orElse(ResponseEntity.notFound().build());
-        /*
-        //Metodo 2
-        var response = empresaRepository.findById(id);
-        if(response.isPresent()){
-
-            var empresaUpdated = response.get();
-            empresaUpdated.setCnpj(empresa.getCnpj());
-            empresaRepository.save(empresaUpdated);
-
-        }else  {
-            throw new Exception("Empresa não encontrada");
-        }
-        */
-
-        return "Dados da empresa atualizados: ";
+    public ResponseEntity<Empresa> edit(@PathVariable("id") Long id, @RequestBody Empresa empresa) {
+        return empresaService.updateEmpresa(id, empresa);
     }
     @GetMapping("/list")
-    public Iterable<Empresa> getEmpresa(Long id){
-        return empresaRepository.findAll();
+    public Iterable<Empresa> list(Long id){
+        return empresaService.getEmpresas(id);
     }
     @GetMapping("/find/{id}")
-    public Empresa findEmpresaById(@PathVariable Long id) {
-        return empresaRepository.findEmpresaById(id);
+    public Empresa find(@PathVariable Long id) {
+        return empresaService.getEmpresa(id);
+    }
+    
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> delete(@PathVariable("id") Long id){
+    	return empresaService.deleteEmpresa(id);
     }
 
 
